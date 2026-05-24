@@ -5,6 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { UserRole } from '../../types';
+import PasswordStrength from '../../components/PasswordStrength';
 
 export const RegisterPage: React.FC = () => {
   const [name, setName] = useState('');
@@ -25,6 +26,12 @@ export const RegisterPage: React.FC = () => {
     // Validate passwords match
     if (password !== confirmPassword) {
       setError('Passwords do not match');
+      return;
+    }
+    
+    // Validate password strength
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters');
       return;
     }
     
@@ -130,6 +137,12 @@ export const RegisterPage: React.FC = () => {
               required
               fullWidth
               startAdornment={<Lock size={18} />}
+            />
+            
+            {/* Password Strength Meter */}
+            <PasswordStrength 
+              password={password}
+              onChange={(value) => setPassword(value)}
             />
             
             <Input

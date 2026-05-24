@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { FileText, Upload, Download, Trash2, Share2 } from 'lucide-react';
 import { Card, CardHeader, CardBody } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
+import SignaturePad from '../../components/SignaturePad';
 
 const documents = [
   {
@@ -11,7 +12,8 @@ const documents = [
     type: 'PDF',
     size: '2.4 MB',
     lastModified: '2024-02-15',
-    shared: true
+    shared: true,
+    status: 'Signed'
   },
   {
     id: 2,
@@ -19,7 +21,8 @@ const documents = [
     type: 'Spreadsheet',
     size: '1.8 MB',
     lastModified: '2024-02-10',
-    shared: false
+    shared: false,
+    status: 'Draft'
   },
   {
     id: 3,
@@ -27,7 +30,8 @@ const documents = [
     type: 'Document',
     size: '3.2 MB',
     lastModified: '2024-02-05',
-    shared: true
+    shared: true,
+    status: 'In Review'
   },
   {
     id: 4,
@@ -35,11 +39,40 @@ const documents = [
     type: 'PDF',
     size: '5.1 MB',
     lastModified: '2024-01-28',
-    shared: false
+    shared: false,
+    status: 'Draft'
   }
 ];
 
-export const DocumentsPage: React.FC = () => {
+const DocumentsPage: React.FC = () => {
+  // States - YAHAN SAHI JAGAH HAI
+  const [uploading, setUploading] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [uploadSuccess, setUploadSuccess] = useState(false);
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setSelectedFile(e.target.files[0]);
+    }
+  };
+
+  const handleUpload = () => {
+    if (!selectedFile) {
+      alert('Please select a file first');
+      return;
+    }
+    
+    setUploading(true);
+    
+    setTimeout(() => {
+      setUploading(false);
+      setUploadSuccess(true);
+      alert(`File "${selectedFile.name}" uploaded successfully!`);
+      setSelectedFile(null);
+      setTimeout(() => setUploadSuccess(false), 3000);
+    }, 1500);
+  };
+
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="flex justify-between items-center">
@@ -48,10 +81,40 @@ export const DocumentsPage: React.FC = () => {
           <p className="text-gray-600">Manage your startup's important files</p>
         </div>
         
-        <Button leftIcon={<Upload size={18} />}>
-          Upload Document
-        </Button>
+        <div className="flex gap-3">
+          <input
+            type="file"
+            id="file-upload"
+            className="hidden"
+            onChange={handleFileSelect}
+          />
+          <label
+            htmlFor="file-upload"
+            className="px-4 py-2 bg-gray-200 rounded cursor-pointer hover:bg-gray-300 inline-flex items-center gap-2"
+          >
+            <Upload size={18} />
+            Select File
+          </label>
+          
+          <Button 
+            onClick={handleUpload}
+            disabled={!selectedFile || uploading}
+          >
+            {uploading ? 'Uploading...' : 'Upload Document'}
+          </Button>
+        </div>
       </div>
+
+      {selectedFile && (
+        <p className="text-sm text-gray-600">Selected: {selectedFile.name}</p>
+      )}
+
+      {uploadSuccess && (
+        <p className="text-green-600 text-sm">✓ File uploaded successfully! (Demo)</p>
+      )}
+      
+      {/* Signature Pad Section */}
+      <SignaturePad />
       
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         {/* Storage info */}
@@ -136,7 +199,21 @@ export const DocumentsPage: React.FC = () => {
                       </div>
                     </div>
                     
-                    <div className="flex items-center gap-2 ml-4">
+                    {/* Status Badge */}
+                    <div className="mr-4">
+                      <Badge 
+                        variant={
+                          doc.status === 'Signed' ? 'success' : 
+                          doc.status === 'In Review' ? 'warning' : 
+                          'secondary'
+                        }
+                        size="sm"
+                      >
+                        {doc.status}
+                      </Badge>
+                    </div>
+                    
+                    <div className="flex items-center gap-2">
                       <Button
                         variant="ghost"
                         size="sm"
@@ -174,3 +251,5 @@ export const DocumentsPage: React.FC = () => {
     </div>
   );
 };
+
+export default DocumentsPage;
